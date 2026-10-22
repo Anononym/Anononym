@@ -9,10 +9,6 @@ const PORT = Number(process.env.PORT) || 3000;
 const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(__dirname, 'data'));
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 const PASSWORD = process.env.APP_PASSWORD || '';
-const ELEVEN_KEY = process.env.ELEVENLABS_API_KEY || '';
-const ELEVEN_VOICE = process.env.ELEVENLABS_VOICE_ID || 'JBFqnCBsd6RMkjVDRZzb';
-const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || '';
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
 
 const MEDIA_TYPES = {
   'image/jpeg': 'jpg',
@@ -23,8 +19,11 @@ const MEDIA_TYPES = {
 };
 const COLLECTIONS = ['sessions', 'income', 'trainings'];
 
+const DEFAULT_GOALS = { weekHours: 40, monthIncome: 5000, weekTrainings: 3 };
+
 const emptyDb = () => ({
-  name: process.env.HERO_NAME || 'Bruce',
+  name: process.env.HERO_NAME || 'Player',
+  goals: { ...DEFAULT_GOALS },
   activeSession: null,
   sessions: [],
   income: [],
@@ -36,7 +35,9 @@ const emptyDb = () => ({
 
 async function loadDb() {
   try {
-    return { ...emptyDb(), ...JSON.parse(await fs.readFile(DB_FILE, 'utf8')) };
+    const db = { ...emptyDb(), ...JSON.parse(await fs.readFile(DB_FILE, 'utf8')) };
+    db.goals = { ...DEFAULT_GOALS, ...db.goals };
+    return db;
   } catch (err) {
     if (err.code === 'ENOENT') return emptyDb();
     throw err;
@@ -96,7 +97,7 @@ app.use((req, res, next) => {
     const pass = decoded.slice(decoded.indexOf(':') + 1);
     if (sameSecret(pass, PASSWORD)) return next();
   }
-  res.set('WWW-Authenticate', 'Basic realm="Batcave", charset="UTF-8"').status(401).send('Zutritt verweigert.');
+  res.set('WWW-Authenticate', 'Basic realm="Stats", charset="UTF-8"').status(401).send('Zutritt verweigert.');
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -110,18 +111,20 @@ const route = (handler) => async (req, res, next) => {
   }
 };
 
-app.get('/api/state', route(async () => {
-  const db = await loadDb();
-  return {
-    ...db,
-    features: { voice: Boolean(ELEVEN_KEY), alfred: Boolean(ANTHROPIC_KEY) },
-  };
-}));
+app.get('/api/state', route(async () => loadDb()));
 
 app.put('/api/settings', route(async (req) => mutate((db) => {
-  const name = String(req.body.name ?? '').trim().slice(0, 40);
-  if (!name) throw new HttpError(400, 'Name fehlt');
-  db.name = name;
+  if (req.body.name !== undefined) {
+    const name = String(req.body.name).trim().slice(0, 40);
+    if (!name) throw new HttpError(400, 'Name fehlt');
+    db.name = name;
+  }
+  for (const key of Object.keys(DEFAULT_GOALS)) {
+    if (req.body.goals?.[key] === undefined) continue;
+    const value = Number(req.body.goals[key]);
+    if (!Number.isFinite(value) || value <= 0) throw new HttpError(400, `Ungültiges Ziel: ${key}`);
+    db.goals[key] = value;
+  }
   return { ok: true };
 })));
 
@@ -202,65 +205,6 @@ app.get('/media/:file', async (req, res, next) => {
   res.sendFile(path.join(DATA_DIR, db.media.file), { maxAge: '365d', immutable: true });
 });
 
-// Text-to-speech via ElevenLabs. Key stays on the server.
-app.post('/api/speak', async (req, res, next) => {
-  try {
-    if (!ELEVEN_KEY) throw new HttpError(501, 'ElevenLabs nicht konfiguriert');
-    const text = String(req.body.text ?? '').trim().slice(0, 800);
-    if (!text) throw new HttpError(400, 'Kein Text');
-    const upstream = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN_VOICE}?output_format=mp3_44100_128`, {
-      method: 'POST',
-      headers: { 'xi-api-key': ELEVEN_KEY, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
-      body: JSON.stringify({
-        text,
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: { stability: 0.55, similarity_boost: 0.8, style: 0.2 },
-      }),
-    });
-    if (!upstream.ok) throw new HttpError(502, `ElevenLabs: ${upstream.status} ${await upstream.text()}`);
-    res.set('Content-Type', 'audio/mpeg').send(Buffer.from(await upstream.arrayBuffer()));
-  } catch (err) {
-    next(err);
-  }
-});
-
-const ALFRED_PROMPT = (name, context) => `Du bist Alfred Pennyworth, der loyale, trocken-humorvolle britische Butler von ${name} (Batman).
-Du sprichst Deutsch, siezt ${name} und nennst ihn "Master ${name}".
-Deine Antworten werden laut vorgelesen: kurz (1-4 Sätze), keine Aufzählungen, kein Markdown, keine Emojis.
-Du bist ehrlich und forderst ${name}, wenn er zu wenig arbeitet oder das Training schleifen lässt, bleibst dabei aber respektvoll und warm.
-Erfinde keine Zahlen. Nutze nur die folgenden aktuellen Daten aus dem Batcomputer:
-
-${context}`;
-
-app.post('/api/alfred', route(async (req) => {
-  if (!ANTHROPIC_KEY) throw new HttpError(501, 'Claude nicht konfiguriert');
-  const db = await loadDb();
-  const messages = (Array.isArray(req.body.messages) ? req.body.messages : [])
-    .slice(-20)
-    .filter((m) => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
-    .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }));
-  if (messages.at(-1)?.role !== 'user') throw new HttpError(400, 'Keine Frage');
-
-  const upstream = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': ANTHROPIC_KEY,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: ANTHROPIC_MODEL,
-      max_tokens: 400,
-      system: ALFRED_PROMPT(db.name, String(req.body.context ?? '').slice(0, 2000)),
-      messages,
-    }),
-  });
-  if (!upstream.ok) throw new HttpError(502, `Claude: ${upstream.status} ${await upstream.text()}`);
-  const data = await upstream.json();
-  const reply = data.content?.filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
-  return { reply: reply || `Verzeihung, Master ${db.name}, mir fehlen die Worte.` };
-}));
-
 app.use((err, req, res, _next) => {
   const status = err.status || err.statusCode || 500;
   if (status >= 500) console.error(err);
@@ -269,8 +213,6 @@ app.use((err, req, res, _next) => {
 
 await fs.mkdir(DATA_DIR, { recursive: true });
 app.listen(PORT, () => {
-  console.log(`Batcomputer online: http://localhost:${PORT}`);
-  console.log(`  Stimme (ElevenLabs): ${ELEVEN_KEY ? 'aktiv' : 'aus -> Browser-Stimme'}`);
-  console.log(`  Alfred (Claude):     ${ANTHROPIC_KEY ? 'aktiv' : 'aus'}`);
-  console.log(`  Passwortschutz:      ${PASSWORD ? 'aktiv' : 'AUS (nur lokal ok!)'}`);
+  console.log(`Online: http://localhost:${PORT}`);
+  console.log(`Passwortschutz: ${PASSWORD ? 'aktiv' : 'AUS (nur lokal ok!)'}`);
 });

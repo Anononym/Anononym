@@ -1,8 +1,8 @@
 {
-  "name": "batcomputer",
+  "name": "level-up",
   "version": "1.0.0",
   "private": true,
-  "description": "Persönliches Batman-Dashboard mit Alfred als Sprachassistent",
+  "description": "Persönliches Tracking-Dashboard im Game-Stil",
   "type": "module",
   "main": "server.js",
   "scripts": {

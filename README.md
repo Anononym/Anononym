@@ -1,51 +1,42 @@
-# 🦇 Batcomputer
+# Level Up
 
-Dein persönliches Batman-Dashboard. Alfred begrüßt dich mit Stimme, zeigt dich animiert in Gotham
-und trackt Arbeitszeit, Umsatz und Training.
+Persönliches Tracking-Dashboard im Game-Stil: Avatar mit Level & XP, darunter deine IRL Stats.
 
-## Funktionen
+## Was es trackt
 
-- **Begrüßung und Lagebericht** – „Guten Abend, Master Bruce.“ Danach liest Alfred deine Zahlen vor (ElevenLabs-Stimme, sonst Browser-Stimme).
-- **Du im Bild** – du lädst ein Foto oder MP4 hoch. Es steht im Regen vor der Skyline, mit Bat-Signal, Blitzen und Parallax-Effekt.
-- **Stats** – gearbeitet heute, diese Woche und diesen Monat, Umsatz im Monat, Trainings pro Woche und Monat.
-- **Einsatz-Timer** – mit Start/Stopp misst du deine Arbeitszeit. Vergessene Zeiten trägst du nach.
-- **Alfred-KI** – Chat oder Spracheingabe per Mikrofon. Alfred kennt deine Zahlen und antwortet mit Stimme (Claude).
-- **Passwortschutz** – bevor die Seite online geht, setzt du ein Passwort.
+- **Arbeit** – heute, diese Woche, diesen Monat (Session-Timer Start/Stop oder nachtragen)
+- **Geld** – Umsatz diesen Monat
+- **Training** – Anzahl diese Woche und diesen Monat
+
+Jeder Stat hat einen Fortschrittsbalken zu deinem Ziel (unter „Profil & Ziele“ einstellbar).
+
+## Game-Layer
+
+- XP: 10 XP pro Arbeitsstunde, 50 XP pro Training, 1 XP pro 10 € Umsatz
+- Level steigen progressiv (100, 300, 600, 1000 … XP), mit Level-up-Animation
+- Ränge: Rookie → Grinder (Lvl 5) → Locked In (10) → Elite (20) → Legend (35)
+- Streak: Tage in Folge mit Arbeit oder Training
 
 ## Lokal starten
 
 ```bash
 npm install
-cp .env.example .env     # Keys eintragen (alles optional)
-npm start                # -> http://localhost:3000
+cp .env.example .env
+npm start            # -> http://localhost:3000
 ```
 
-Du brauchst Node.js 22.9 oder neuer. Die Daten liegen in `data/` (`db.json` + dein Foto).
+Du brauchst Node.js 22.9 oder neuer. Die Daten liegen in `data/` (`db.json` + dein Avatar).
 
-## Schlüssel
+## Online stellen (Railway, ca. 5 $/Monat)
 
-| Variable | Wofür | Woher |
-|---|---|---|
-| `ELEVENLABS_API_KEY` | Stimme | elevenlabs.io → Profil → API Keys |
-| `ELEVENLABS_VOICE_ID` | Welche Stimme | ElevenLabs Voice Library → Stimme → „ID kopieren“ |
-| `ANTHROPIC_API_KEY` | Alfred denkt mit | console.anthropic.com → API Keys |
-| `APP_PASSWORD` | Schutz online | selbst ausdenken |
-| `HERO_NAME` | Wie Alfred dich nennt | z. B. `Bruce` |
+1. [railway.com](https://railway.com) → „New Project“ → „Deploy from GitHub repo“ → dieses Repo wählen.
+2. Unter **Variables** `APP_PASSWORD` setzen (Pflicht, sonst kann jeder deine Daten sehen).
+3. **Volume** hinzufügen, Mount-Pfad `/data`, dann Variable `DATA_DIR=/data` setzen. Ohne Volume sind deine Daten nach jedem Deploy weg.
+4. Unter **Settings → Networking** auf „Generate Domain“ klicken.
+5. Auf dem Handy: Seite öffnen → Teilen → „Zum Home-Bildschirm“.
 
-## Online stellen (Railway)
+## Avatar
 
-1. Code auf GitHub (ist schon da).
-2. Auf [railway.com](https://railway.com) → „New Project“ → „Deploy from GitHub repo“ → dieses Repo wählen.
-3. Unter **Variables** die Werte aus `.env.example` eintragen, **`APP_PASSWORD` unbedingt setzen**.
-4. **Volume** hinzufügen, Mount-Pfad `/data`, dann Variable `DATA_DIR=/data` setzen. Ohne Volume sind deine Daten nach jedem Deploy weg.
-5. Unter **Settings → Networking** auf „Generate Domain“ klicken. Fertig.
-6. Auf dem Handy: Seite öffnen → Teilen → „Zum Home-Bildschirm“.
-
-## Echte Animation deines Fotos
-
-Die Seite animiert dein Foto selbst (atmen, Licht, Regen, Parallax). Wenn du dich wirklich bewegen willst:
-Erzeug aus deinem Foto ein 5–10-sekündiges Video in einem Image-to-Video-Tool (z. B. Kling, Runway oder Hedra).
-Prompt-Idee: *„man standing still on a rooftop at night, cape moving in wind, rain, subtle breathing, cinematic, loopable“*.
-Das MP4 lädst du unter Einstellungen hoch, danach läuft es als Loop.
-
-Am besten wirkt ein Foto **mit transparentem Hintergrund (PNG)**, z. B. freigestellt mit remove.bg.
+- Am besten ein **freigestelltes PNG** (transparenter Hintergrund, z. B. über remove.bg). Es steht dann auf dem leuchtenden Ring.
+- Ein normales Foto füllt die Karte aus.
+- Für echte Bewegung erzeugst du aus dem Foto ein kurzes Video (z. B. mit Kling, Runway oder Hedra) und lädst das MP4 hoch. Es läuft dann als Loop.

@@ -3,157 +3,183 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#050507">
+  <meta name="theme-color" content="#060608">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Batcomputer</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60'%3E%3Cpath fill='%23f5c518' d='M50 12l4-10 3 12c8-2 14-8 14-8-2 10 4 16 29 18-14 4-20 14-20 26-8-10-16-6-20 4-4-6-6-10-10-10s-6 4-10 10c-4-10-12-14-20-4 0-12-6-22-20-26C25 22 31 16 29 6c0 0 6 6 14 8l3-12z'/%3E%3C/svg%3E">
+  <title>Level Up</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23b8f53d'/%3E%3Cpath d='M9 22l7-12 7 12z' fill='%23060608'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Boot screen: one click needed so the browser allows audio -->
-  <div id="boot" class="boot">
-    <svg class="boot-bat" viewBox="0 0 100 60" aria-hidden="true"><use href="#bat"/></svg>
-    <div class="boot-lines" id="bootLines"></div>
-    <button class="btn btn-primary" id="bootBtn">System aktivieren</button>
-  </div>
-
-  <svg width="0" height="0" style="position:absolute">
-    <symbol id="bat" viewBox="0 0 100 60">
-      <path d="M50 12l4-10 3 12c8-2 14-8 14-8-2 10 4 16 29 18-14 4-20 14-20 26-8-10-16-6-20 4-4-6-6-10-10-10s-6 4-10 10c-4-10-12-14-20-4 0-12-6-22-20-26C25 22 31 16 29 6c0 0 6 6 14 8l3-12z"/>
-    </symbol>
-  </svg>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
 
   <header class="topbar">
     <div class="brand">
-      <svg class="brand-bat" viewBox="0 0 100 60" aria-hidden="true"><use href="#bat"/></svg>
-      <span>BATCOMPUTER</span>
+      <span class="brand-mark"><svg viewBox="0 0 32 32"><path d="M9 22l7-12 7 12z"/></svg></span>
+      <span>LEVEL UP</span>
     </div>
-    <div class="status">
-      <span class="dot" id="statusDot"></span>
-      <span id="clock" class="mono">--:--:--</span>
+    <div class="topbar-right">
+      <span class="live-pill" id="livePill" hidden><span class="pulse"></span>Session läuft</span>
+      <span class="date mono" id="today"></span>
     </div>
   </header>
 
   <main>
-    <!-- Hero: you, standing in Gotham -->
-    <section class="hero" id="hero">
-      <canvas id="rain" class="layer"></canvas>
-      <div class="layer sky">
-        <div class="moon"></div>
-        <div class="signal"><div class="beam"></div><svg viewBox="0 0 100 60"><use href="#bat"/></svg></div>
-      </div>
-      <svg class="layer skyline" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0 300V190h40v-40h30v60h25V120h35v90h20v-70h15v-30h20v100h30V80l20-30 20 30v130h25v-60h40v80h20V100h15V60h10v40h15v120h30v-90h45v90h20V140h30v-50h20v50h15v100h25V170h40v60h20v-90h20l15-40 15 40v90h30v-70h35v80h20V110h25v110h30V160h40v60h20V130h15V90h20v130h30v-50h35v60h25V150h30v150z"/>
-      </svg>
-      <div class="layer figure" id="figure">
-        <div class="figure-empty" id="figureEmpty">
-          <svg viewBox="0 0 100 60"><use href="#bat"/></svg>
-          <p>Lade ein Foto oder Video von dir hoch</p>
-          <label class="btn btn-ghost">Foto wählen<input type="file" accept="image/*,video/mp4,video/webm" hidden data-upload></label>
-        </div>
-      </div>
-      <div class="layer flash" id="flash"></div>
-      <div class="layer vignette"></div>
-      <div class="layer scan"></div>
-
-      <div class="hero-text">
-        <p class="kicker mono" id="kicker">WAYNE ENTERPRISES · SECURE TERMINAL</p>
-        <h1 id="greeting">&nbsp;</h1>
-        <p class="briefing" id="briefing"></p>
-        <div class="hero-actions">
-          <button class="btn btn-primary" id="briefBtn">▶ Lagebericht</button>
-          <button class="btn btn-ghost" id="stopVoice" hidden>■ Stopp</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Stats -->
-    <section class="stats" aria-label="Statistiken">
-      <article class="stat"><h2>Heute</h2><p class="value mono" id="sToday">0h 00m</p><p class="sub">gearbeitet</p></article>
-      <article class="stat"><h2>Diese Woche</h2><p class="value mono" id="sWeek">0h 00m</p><p class="sub">gearbeitet</p></article>
-      <article class="stat"><h2>Dieser Monat</h2><p class="value mono" id="sMonth">0h 00m</p><p class="sub">gearbeitet</p></article>
-      <article class="stat stat-gold"><h2>Umsatz Monat</h2><p class="value mono" id="sMoney">0 €</p><p class="sub" id="sMoneySub">verdient</p></article>
-      <article class="stat"><h2>Training</h2><p class="value mono" id="sTrainWeek">0×</p><p class="sub">diese Woche</p></article>
-      <article class="stat"><h2>Training</h2><p class="value mono" id="sTrainMonth">0×</p><p class="sub">diesen Monat</p></article>
-    </section>
-
-    <div class="grid">
-      <!-- Controls -->
-      <section class="panel">
-        <h2 class="panel-title">Einsatzzentrale</h2>
-
-        <div class="timer">
-          <div>
-            <p class="label">Laufender Einsatz</p>
-            <p class="timer-value mono" id="timer">--:--:--</p>
+    <!-- Player + stats -->
+    <section class="hero">
+      <article class="avatar-card" id="avatarCard">
+        <div class="avatar-frame">
+          <div class="avatar-media" id="avatarMedia">
+            <div class="avatar-empty" id="avatarEmpty">
+              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-9 2.5-9 6v2h18v-2c0-3.5-4-6-9-6z"/></svg>
+              <span>Foto hochladen</span>
+            </div>
           </div>
-          <button class="btn btn-primary btn-lg" id="workBtn">Einsatz starten</button>
-        </div>
-
-        <details class="drawer">
-          <summary>Arbeitszeit nachtragen</summary>
-          <form id="sessionForm" class="form">
-            <label>Datum<input type="date" name="date" required></label>
-            <label>Stunden<input type="number" name="hours" min="0.25" max="24" step="0.25" required placeholder="z. B. 2.5"></label>
-            <button class="btn btn-ghost">Speichern</button>
-          </form>
-        </details>
-
-        <form id="incomeForm" class="form form-row">
-          <label>Umsatz (€)<input type="number" name="amount" step="0.01" required placeholder="z. B. 450"></label>
-          <label>Notiz<input type="text" name="note" maxlength="200" placeholder="Kunde / Projekt"></label>
-          <label>Datum<input type="date" name="date" required></label>
-          <button class="btn btn-ghost">+ Umsatz</button>
-        </form>
-
-        <form id="trainingForm" class="form form-row">
-          <label>Training<input type="text" name="note" maxlength="200" placeholder="z. B. Gym, Boxen, Laufen"></label>
-          <label>Datum<input type="date" name="date" required></label>
-          <button class="btn btn-ghost">+ Training</button>
-        </form>
-      </section>
-
-      <!-- Alfred -->
-      <section class="panel alfred">
-        <h2 class="panel-title">Alfred</h2>
-        <div class="chat" id="chat" aria-live="polite"></div>
-        <form id="chatForm" class="chat-input">
-          <button type="button" class="btn btn-icon" id="micBtn" title="Sprechen" aria-label="Sprechen">
-            <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V22h2v-3.1A7 7 0 0 0 19 12z"/></svg>
-          </button>
-          <input type="text" name="q" id="chatInput" autocomplete="off" placeholder="Frag Alfred …">
-          <button class="btn btn-primary">Senden</button>
-        </form>
-        <p class="hint" id="alfredHint"></p>
-      </section>
-    </div>
-
-    <div class="grid">
-      <section class="panel">
-        <h2 class="panel-title">Logbuch</h2>
-        <ul class="log" id="log"></ul>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel-title">Einstellungen</h2>
-        <form id="nameForm" class="form form-row">
-          <label>Dein Name<input type="text" name="name" maxlength="40" required></label>
-          <button class="btn btn-ghost">Speichern</button>
-        </form>
-        <div class="form">
-          <label class="btn btn-ghost upload">Foto / Video hochladen
+          <div class="avatar-ring" aria-hidden="true"></div>
+          <div class="streak" id="streak" title="Tage in Folge aktiv">
+            <svg viewBox="0 0 24 24"><path d="M13.5 1s1 3.5-1.5 6.5S8 12 8 15a4 4 0 0 0 8 0c0-1.5-.5-2.5-.5-2.5S18 14 18 17a6 6 0 0 1-12 0c0-5 4-7 5.5-10S13.5 1 13.5 1z"/></svg>
+            <span id="streakVal">0</span>
+          </div>
+          <label class="avatar-upload" title="Foto oder Video ändern">
+            <svg viewBox="0 0 24 24"><path d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
             <input type="file" accept="image/*,video/mp4,video/webm" hidden data-upload>
           </label>
-          <p class="hint">Tipp: Für eine echte Bewegung erzeugst du aus deinem Foto ein kurzes Video
-            (z. B. mit Kling, Runway oder Hedra) und lädst das MP4 hier hoch. Es läuft dann als Loop.</p>
         </div>
-        <p class="hint" id="featureInfo"></p>
-      </section>
-    </div>
+        <div class="player">
+          <div class="player-top">
+            <div>
+              <p class="rank mono" id="rank">ROOKIE</p>
+              <h1 id="playerName">Player</h1>
+            </div>
+            <div class="level">
+              <span class="level-label mono">LVL</span>
+              <span class="level-value" id="level">1</span>
+            </div>
+          </div>
+          <div class="xp">
+            <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+            <div class="xp-meta mono"><span id="xpText">0 / 100 XP</span><span id="xpTotal">0 XP gesamt</span></div>
+          </div>
+        </div>
+      </article>
+
+      <div class="hero-right">
+        <div class="section-head">
+          <h2>IRL Stats</h2>
+          <span class="mono muted" id="periodLabel"></span>
+        </div>
+
+        <div class="stats">
+          <article class="stat" data-kind="work">
+            <div class="stat-head"><span class="chip">Arbeit</span><span class="stat-label">Heute</span></div>
+            <p class="stat-value mono" id="sToday">0h 00m</p>
+            <div class="meter"><div class="meter-fill" id="mToday"></div></div>
+            <p class="stat-goal" id="gToday"></p>
+          </article>
+          <article class="stat" data-kind="work">
+            <div class="stat-head"><span class="chip">Arbeit</span><span class="stat-label">Woche</span></div>
+            <p class="stat-value mono" id="sWeek">0h 00m</p>
+            <div class="meter"><div class="meter-fill" id="mWeek"></div></div>
+            <p class="stat-goal" id="gWeek"></p>
+          </article>
+          <article class="stat" data-kind="work">
+            <div class="stat-head"><span class="chip">Arbeit</span><span class="stat-label">Monat</span></div>
+            <p class="stat-value mono" id="sMonth">0h 00m</p>
+            <div class="meter"><div class="meter-fill" id="mMonth"></div></div>
+            <p class="stat-goal" id="gMonth"></p>
+          </article>
+          <article class="stat" data-kind="money">
+            <div class="stat-head"><span class="chip">Geld</span><span class="stat-label">Monat</span></div>
+            <p class="stat-value mono" id="sMoney">0 €</p>
+            <div class="meter"><div class="meter-fill" id="mMoney"></div></div>
+            <p class="stat-goal" id="gMoney"></p>
+          </article>
+          <article class="stat" data-kind="train">
+            <div class="stat-head"><span class="chip">Training</span><span class="stat-label">Woche</span></div>
+            <p class="stat-value mono" id="sTrainWeek">0×</p>
+            <div class="meter"><div class="meter-fill" id="mTrainWeek"></div></div>
+            <p class="stat-goal" id="gTrainWeek"></p>
+          </article>
+          <article class="stat" data-kind="train">
+            <div class="stat-head"><span class="chip">Training</span><span class="stat-label">Monat</span></div>
+            <p class="stat-value mono" id="sTrainMonth">0×</p>
+            <div class="meter"><div class="meter-fill" id="mTrainMonth"></div></div>
+            <p class="stat-goal" id="gTrainMonth"></p>
+          </article>
+        </div>
+
+        <!-- Session timer -->
+        <div class="session" id="session">
+          <div>
+            <p class="eyebrow mono">Work Session</p>
+            <p class="session-time mono" id="timer">00:00:00</p>
+          </div>
+          <button class="btn btn-primary btn-lg" id="workBtn">Start</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick actions -->
+    <section class="actions">
+      <form class="card action" id="trainingForm" data-kind="train">
+        <div class="action-head"><span class="chip">Training</span><span class="xp-tag mono">+50 XP</span></div>
+        <div class="row">
+          <input type="text" name="note" maxlength="200" placeholder="Gym, Boxen, Laufen …" aria-label="Was hast du trainiert?">
+          <input type="date" name="date" required aria-label="Datum">
+        </div>
+        <button class="btn btn-block">Training eintragen</button>
+      </form>
+
+      <form class="card action" id="incomeForm" data-kind="money">
+        <div class="action-head"><span class="chip">Geld</span><span class="xp-tag mono">+1 XP / 10 €</span></div>
+        <div class="row">
+          <input type="number" name="amount" step="0.01" required placeholder="Betrag €" aria-label="Betrag in Euro">
+          <input type="text" name="note" maxlength="200" placeholder="Kunde / Projekt" aria-label="Notiz">
+          <input type="date" name="date" required aria-label="Datum">
+        </div>
+        <button class="btn btn-block">Umsatz eintragen</button>
+      </form>
+
+      <form class="card action" id="sessionForm" data-kind="work">
+        <div class="action-head"><span class="chip">Arbeit</span><span class="xp-tag mono">+10 XP / h</span></div>
+        <div class="row">
+          <input type="number" name="hours" min="0.25" max="24" step="0.25" required placeholder="Stunden" aria-label="Stunden">
+          <input type="date" name="date" required aria-label="Datum">
+        </div>
+        <button class="btn btn-block">Zeit nachtragen</button>
+      </form>
+    </section>
+
+    <section class="lower">
+      <article class="card chart-card">
+        <div class="section-head">
+          <h2>Diese Woche</h2>
+          <span class="mono muted" id="chartTotal"></span>
+        </div>
+        <div class="chart" id="chart" role="img" aria-label="Arbeitsstunden pro Tag diese Woche"></div>
+        <div class="tooltip mono" id="tooltip" hidden></div>
+      </article>
+
+      <article class="card">
+        <div class="section-head"><h2>Log</h2></div>
+        <ul class="log" id="log"></ul>
+      </article>
+    </section>
+
+    <section class="card settings">
+      <div class="section-head"><h2>Profil &amp; Ziele</h2></div>
+      <form id="settingsForm" class="settings-grid">
+        <label>Name<input type="text" name="name" maxlength="40" required></label>
+        <label>Ziel Stunden / Woche<input type="number" name="weekHours" min="1" step="1" required></label>
+        <label>Ziel Umsatz / Monat (€)<input type="number" name="monthIncome" min="1" step="50" required></label>
+        <label>Ziel Trainings / Woche<input type="number" name="weekTrainings" min="1" step="1" required></label>
+        <button class="btn">Speichern</button>
+      </form>
+    </section>
   </main>
 
   <div class="toast" id="toast" role="status"></div>
