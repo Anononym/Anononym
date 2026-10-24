@@ -1,6 +1,6 @@
 # Level Up
 
-Persönliches Tracking-Dashboard im Game-Stil: Avatar mit Level & XP, darunter deine IRL Stats.
+Persönliches Tracking-Dashboard im Game-Stil: Level-Leiste mit XP und Belohnungen, darunter deine IRL Stats.
 
 ## Was es trackt
 
@@ -10,23 +10,21 @@ Persönliches Tracking-Dashboard im Game-Stil: Avatar mit Level & XP, darunter d
 - **Schlaf** – letzte Nacht und Ø der letzten 7 Tage (Standardziel 9:30)
 
 Jedes Ziel änderst du jederzeit: Ziel in der Stat-Kachel antippen oder unter „Profil & Ziele“.
-Unter **Lifetime** findest du alle Einträge, die Summen seit Start und eine Übersicht pro Monat.
+Unter **Lifetime** findest du alle Einträge, die Summen seit Start und eine Übersicht pro Monat inklusive XP.
 
-## Dein Charakter
+## Level & XP
 
-Ein animierter Charakter (oberkörperfrei, Jeans, auf einer leuchtenden Plattform) zeigt, wie es läuft:
+- Ein **perfekter Tag** (alle Ziele erreicht) bringt **500 XP**: Arbeit 200, Training 100, Geld 100, Schlaf 100.
+- Ein **Level** kostet **1.000 XP**, entspricht also 2 perfekten Tagen.
+- Arbeit und Training zählen gegen dein Wochenziel, Geld gegen dein Monatsziel. So kostet dich ein freier Tag nichts, solange du das Wochen- oder Monatsziel schaffst.
+  Bei 40 h/Woche gibt es 35 XP pro Stunde, bei 3 Trainings/Woche 233 XP pro Training.
+- Schlaf zählt pro Nacht bis zum Ziel (max. 100 XP), ohne Bonus.
+- **Ziel übertroffen:** Alles darüber bringt 50 % XP extra, bis zum Doppelten des Ziels.
+- XP gehen auf den Tag, an dem du es gemacht hast. Jeder Eintrag zeigt seine XP. Wenn du Ziele änderst, wird alles neu berechnet.
 
-- **Form** (Muskeln): wie nah du in den letzten 7 Tagen (Arbeit, Training, Schlaf) und 30 Tagen (Umsatz) an deinen Zielen warst. Wenn du sie überschreitest, wirst du breiter, bekommst ein Sixpack und eine Aura.
-- **Energie** (Gesichtsausdruck, Haltung): Schlaf letzte Nacht plus Arbeit der letzten 3 Tage. Bei wenig Energie wirkt er müde: Augenringe, hängende Lider, blasse Haut, hängende Schultern, „Zzz“.
+## Belohnungen
 
-Das Fenster ist rollierend, damit der Charakter nicht jeden Montag wieder schrumpft.
-
-## Game-Layer
-
-- XP: 10 XP pro Arbeitsstunde, 50 XP pro Training, 1 XP pro 10 € Umsatz, 20 XP pro Nacht mit erreichtem Schlafziel
-- Level steigen progressiv (100, 300, 600, 1000 … XP), mit Level-up-Animation
-- Ränge: Rookie → Grinder (Lvl 5) → Locked In (10) → Elite (20) → Legend (35)
-- Streak: Tage in Folge mit Arbeit oder Training
+Du legst fest, was du dir bei welchem Level gönnst. Die Level-Leiste zeigt die nächste Belohnung und wie viele perfekte Tage noch fehlen. Freigeschaltete Belohnungen markierst du als eingelöst.
 
 ## Lokal starten
 
@@ -36,7 +34,7 @@ cp .env.example .env
 npm start            # -> http://localhost:3000
 ```
 
-Du brauchst Node.js 22.9 oder neuer. Die Daten liegen in `data/` (`db.json` + dein Avatar).
+Du brauchst Node.js 22.9 oder neuer. Die Daten liegen in `data/` (`db.json`).
 
 ## Online stellen (Railway, ca. 5 $/Monat)
 

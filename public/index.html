@@ -34,77 +34,74 @@
 
   <!-- ================= DASHBOARD ================= -->
   <main id="view-dashboard">
-    <section class="hero">
-      <article class="avatar-card">
-        <div class="avatar-frame">
-          <div class="character" id="character"></div>
-          <div class="streak" id="streak" title="Tage in Folge mit Arbeit oder Training">
-            <svg viewBox="0 0 24 24"><path d="M13.5 1s1 3.5-1.5 6.5S8 12 8 15a4 4 0 0 0 8 0c0-1.5-.5-2.5-.5-2.5S18 14 18 17a6 6 0 0 1-12 0c0-5 4-7 5.5-10S13.5 1 13.5 1z"/></svg>
-            <span id="streakVal">0</span>
-          </div>
-          <div class="mood mono" id="mood">STARTER</div>
+    <!-- Level bar -->
+    <section class="card levelbar">
+      <div class="lvl-main">
+        <div class="lvl-badge">
+          <span class="lvl-label mono">LEVEL</span>
+          <span class="lvl-value" id="level">1</span>
         </div>
-        <div class="player">
-          <div class="player-top">
-            <div>
-              <p class="rank mono" id="rank">ROOKIE</p>
-              <h1 id="playerName">Player</h1>
-            </div>
-            <div class="level">
-              <span class="level-label mono">LVL</span>
-              <span class="level-value" id="level">1</span>
-            </div>
+        <div class="lvl-progress">
+          <div class="lvl-top">
+            <h1 id="playerName">Player</h1>
+            <span class="streak mono" id="streak" title="Tage in Folge mit Arbeit oder Training">
+              <svg viewBox="0 0 24 24"><path d="M13.5 1s1 3.5-1.5 6.5S8 12 8 15a4 4 0 0 0 8 0c0-1.5-.5-2.5-.5-2.5S18 14 18 17a6 6 0 0 1-12 0c0-5 4-7 5.5-10S13.5 1 13.5 1z"/></svg>
+              <span id="streakVal">0</span>
+            </span>
           </div>
-          <div class="xp">
-            <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
-            <div class="xp-meta mono"><span id="xpText">0 / 100 XP</span><span id="xpTotal">0 XP gesamt</span></div>
+          <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+          <div class="xp-meta mono">
+            <span id="xpText">0 / 1.000 XP</span>
+            <span id="xpTotal">0 XP gesamt</span>
           </div>
-          <div class="vitals">
-            <div class="vital" data-kind="work" title="Wie nah du in den letzten 7 bzw. 30 Tagen an deinen Zielen warst">
-              <span class="vital-label">Form</span>
-              <div class="meter"><div class="meter-fill" id="formFill"></div></div>
-              <span class="vital-val mono" id="formVal">0%</span>
-            </div>
-            <div class="vital" data-kind="sleep" title="Letzte Nacht Schlaf + Arbeit der letzten 3 Tage">
-              <span class="vital-label">Energie</span>
-              <div class="meter"><div class="meter-fill" id="energyFill"></div></div>
-              <span class="vital-val mono" id="energyVal">0%</span>
-            </div>
-          </div>
-          <p class="mood-hint" id="moodHint"></p>
         </div>
-      </article>
-
-      <div class="hero-right">
-        <div class="section-head">
-          <h2>IRL Stats</h2>
-          <span class="mono muted" id="periodLabel"></span>
-        </div>
-
-        <div class="stats" id="stats"></div>
-
-        <div class="session" id="session">
-          <div>
-            <p class="eyebrow mono">Work Session</p>
-            <p class="session-time mono" id="timer">00:00:00</p>
-          </div>
-          <button class="btn btn-primary btn-lg" id="workBtn">Start</button>
-        </div>
-
-        <article class="card chart-card">
-          <div class="section-head">
-            <h2>Diese Woche</h2>
-            <span class="mono muted" id="chartTotal"></span>
-          </div>
-          <div class="chart" id="chart" role="img" aria-label="Arbeitsstunden pro Tag diese Woche"></div>
-          <div class="tooltip mono" id="tooltip" hidden></div>
-        </article>
       </div>
+
+      <div class="lvl-side">
+        <div class="today-xp">
+          <div class="today-head">
+            <span class="eyebrow mono">XP heute</span>
+            <span class="mono" id="todayXp">0 / 500</span>
+          </div>
+          <div class="seg-bar" id="todayBar" role="img" aria-label="XP heute nach Bereich"></div>
+          <div class="seg-legend" id="todayLegend"></div>
+        </div>
+        <div class="next-reward" id="nextReward"></div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section>
+      <div class="section-head">
+        <h2>IRL Stats</h2>
+        <span class="mono muted" id="periodLabel"></span>
+      </div>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <section class="split">
+      <div class="session" id="session">
+        <div>
+          <p class="eyebrow mono">Work Session</p>
+          <p class="session-time mono" id="timer">00:00:00</p>
+          <p class="muted session-rate" id="sessionRate"></p>
+        </div>
+        <button class="btn btn-primary btn-lg" id="workBtn">Start</button>
+      </div>
+
+      <article class="card chart-card">
+        <div class="section-head">
+          <h2>Diese Woche</h2>
+          <span class="mono muted" id="chartTotal"></span>
+        </div>
+        <div class="chart" id="chart" role="img" aria-label="XP pro Tag diese Woche"></div>
+        <div class="tooltip mono" id="tooltip" hidden></div>
+      </article>
     </section>
 
     <section class="actions">
       <form class="card action" id="sleepForm" data-kind="sleep">
-        <div class="action-head"><span class="chip">Schlaf</span><span class="xp-tag mono">+20 XP bei Ziel</span></div>
+        <div class="action-head"><span class="chip">Schlaf</span><span class="xp-tag mono" id="rateSleep"></span></div>
         <div class="row">
           <input type="number" name="h" min="0" max="24" step="1" required placeholder="Std" aria-label="Stunden geschlafen">
           <input type="number" name="m" min="0" max="59" step="5" placeholder="Min" aria-label="Minuten geschlafen">
@@ -114,7 +111,7 @@
       </form>
 
       <form class="card action" id="trainingForm" data-kind="train">
-        <div class="action-head"><span class="chip">Training</span><span class="xp-tag mono">+50 XP</span></div>
+        <div class="action-head"><span class="chip">Training</span><span class="xp-tag mono" id="rateTrain"></span></div>
         <div class="row">
           <input type="text" name="note" maxlength="200" placeholder="Gym, Boxen, Laufen …" aria-label="Was hast du trainiert?">
           <input type="date" name="date" required aria-label="Datum">
@@ -123,7 +120,7 @@
       </form>
 
       <form class="card action" id="incomeForm" data-kind="money">
-        <div class="action-head"><span class="chip">Geld</span><span class="xp-tag mono">+1 XP / 10 €</span></div>
+        <div class="action-head"><span class="chip">Geld</span><span class="xp-tag mono" id="rateMoney"></span></div>
         <div class="row">
           <input type="number" name="amount" step="0.01" required placeholder="Betrag €" aria-label="Betrag in Euro">
           <input type="text" name="note" maxlength="200" placeholder="Kunde / Projekt" aria-label="Notiz">
@@ -133,7 +130,7 @@
       </form>
 
       <form class="card action" id="sessionForm" data-kind="work">
-        <div class="action-head"><span class="chip">Arbeit</span><span class="xp-tag mono">+10 XP / h</span></div>
+        <div class="action-head"><span class="chip">Arbeit</span><span class="xp-tag mono" id="rateWork"></span></div>
         <div class="row">
           <input type="text" name="hours" required placeholder="Zeit, z. B. 2:30" inputmode="decimal" aria-label="Arbeitszeit">
           <input type="date" name="date" required aria-label="Datum">
@@ -143,28 +140,47 @@
     </section>
 
     <section class="lower">
+      <article class="card rewards-card">
+        <div class="section-head"><h2>Belohnungen</h2><span class="muted">Was gönnst du dir bei welchem Level?</span></div>
+        <ul class="rewards" id="rewards"></ul>
+        <form id="rewardForm" class="reward-form">
+          <input type="number" name="level" min="2" step="1" required placeholder="Lvl" aria-label="Level">
+          <input type="text" name="text" maxlength="200" required placeholder="z. B. Neue Sneaker" aria-label="Belohnung">
+          <button class="btn">Hinzufügen</button>
+        </form>
+      </article>
 
       <article class="card">
         <div class="section-head"><h2>Letzte Einträge</h2><a href="#lifetime" class="link">Alle ansehen →</a></div>
         <ul class="log" id="log"></ul>
       </article>
-
-      <article class="card settings">
-        <div class="section-head"><h2>Profil &amp; Ziele</h2><span class="muted">Tipp: Ziele kannst du auch direkt in jeder Stat-Kachel antippen.</span></div>
-        <form id="settingsForm" class="settings-grid">
-          <label>Name<input type="text" name="name" maxlength="40" required></label>
-          <label>Arbeit / Tag<input type="text" name="workDay" inputmode="decimal" required></label>
-          <label>Arbeit / Woche<input type="text" name="workWeek" inputmode="decimal" required></label>
-          <label>Arbeit / Monat<input type="text" name="workMonth" inputmode="decimal" required></label>
-          <label>Umsatz / Monat (€)<input type="number" name="incomeMonth" min="1" step="any" required></label>
-          <label>Trainings / Woche<input type="number" name="trainWeek" min="1" step="1" required></label>
-          <label>Trainings / Monat<input type="number" name="trainMonth" min="1" step="1" required></label>
-          <label>Schlaf / Nacht<input type="text" name="sleepNight" inputmode="decimal" required></label>
-          <button class="btn">Speichern</button>
-        </form>
-      </article>
     </section>
 
+    <section class="card settings">
+      <div class="section-head"><h2>Profil &amp; Ziele</h2><span class="muted">Ziele kannst du auch direkt in jeder Stat-Kachel antippen.</span></div>
+      <form id="settingsForm" class="settings-grid">
+        <label>Name<input type="text" name="name" maxlength="40" required></label>
+        <label>Arbeit / Tag<input type="text" name="workDay" inputmode="decimal" required></label>
+        <label>Arbeit / Woche<input type="text" name="workWeek" inputmode="decimal" required></label>
+        <label>Arbeit / Monat<input type="text" name="workMonth" inputmode="decimal" required></label>
+        <label>Umsatz / Monat (€)<input type="number" name="incomeMonth" min="1" step="any" required></label>
+        <label>Trainings / Woche<input type="number" name="trainWeek" min="1" step="1" required></label>
+        <label>Trainings / Monat<input type="number" name="trainMonth" min="1" step="1" required></label>
+        <label>Schlaf / Nacht<input type="text" name="sleepNight" inputmode="decimal" required></label>
+        <button class="btn">Speichern</button>
+      </form>
+      <details class="rules">
+        <summary>So werden XP berechnet</summary>
+        <ul>
+          <li>Ein <strong>perfekter Tag</strong> bringt 500 XP: Arbeit 200, Training 100, Geld 100, Schlaf 100.</li>
+          <li>Ein <strong>Level</strong> kostet 1.000 XP, entspricht also 2 perfekten Tagen.</li>
+          <li><strong>Arbeit</strong> zählt gegen dein Wochenziel, <strong>Training</strong> gegen dein Wochenziel, <strong>Geld</strong> gegen dein Monatsziel. So kostet dich ein freier Tag nichts, wenn du dein Wochenziel trotzdem schaffst.</li>
+          <li><strong>Schlaf</strong> zählt pro Nacht bis zu deinem Ziel (max. 100 XP). Mehr Schlaf gibt keinen Bonus.</li>
+          <li><strong>Ziel übertroffen:</strong> Alles über dem Ziel bringt 50 % XP extra, bis zum Doppelten des Ziels.</li>
+          <li>XP gehen auf den Tag, an dem du es gemacht hast. Wenn du Ziele änderst, wird alles neu berechnet.</li>
+        </ul>
+      </details>
+    </section>
   </main>
 
   <!-- ================= LIFETIME ================= -->
@@ -174,14 +190,14 @@
         <h2 class="page-title">Lifetime</h2>
         <span class="mono muted" id="sinceLabel"></span>
       </div>
-      <div class="stats lifetime-stats" id="lifetimeStats"></div>
+      <div class="stats" id="lifetimeStats"></div>
     </section>
 
     <section class="card">
       <div class="section-head"><h2>Pro Monat</h2></div>
       <div class="table-wrap">
         <table class="months">
-          <thead><tr><th>Monat</th><th>Arbeit</th><th>Umsatz</th><th>Trainings</th><th>Ø Schlaf</th></tr></thead>
+          <thead><tr><th>Monat</th><th>XP</th><th>Arbeit</th><th>Umsatz</th><th>Trainings</th><th>Ø Schlaf</th></tr></thead>
           <tbody id="monthRows"></tbody>
         </table>
       </div>
@@ -204,8 +220,8 @@
 
   <dialog class="goal-dialog" id="goalDialog">
     <form method="dialog" id="goalForm">
-      <p class="eyebrow mono" id="goalKind"></p>
-      <h3 id="goalTitle">Ziel ändern</h3>
+      <p class="eyebrow mono">Ziel ändern</p>
+      <h3 id="goalTitle">Ziel</h3>
       <input type="text" name="value" inputmode="decimal" required>
       <p class="muted" id="goalHint"></p>
       <div class="dialog-actions">

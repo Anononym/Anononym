@@ -10,7 +10,7 @@ const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(__dirname, 'data
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 const PASSWORD = process.env.APP_PASSWORD || '';
 
-const COLLECTIONS = ['sessions', 'income', 'trainings', 'sleep'];
+const COLLECTIONS = ['sessions', 'income', 'trainings', 'sleep', 'rewards'];
 
 // Hours for work and sleep, euros for income, counts for training.
 const DEFAULT_GOALS = {
@@ -41,6 +41,7 @@ const emptyDb = () => ({
   income: [],
   trainings: [],
   sleep: [],
+  rewards: [],
 });
 
 // ---------- Storage: one JSON file, writes serialized to avoid lost updates ----------
@@ -195,6 +196,24 @@ app.post('/api/sleep', route(async (req) => mutate((db) => {
   const entry = { id: crypto.randomUUID(), day, date, minutes };
   db.sleep.push(entry);
   return entry;
+})));
+
+// Rewards you give yourself when reaching a level.
+app.post('/api/rewards', route(async (req) => mutate((db) => {
+  const level = Number(req.body.level);
+  if (!Number.isInteger(level) || level < 2 || level > 9999) throw new HttpError(400, 'Level muss eine ganze Zahl ab 2 sein');
+  const text = cleanNote(req.body.text);
+  if (!text) throw new HttpError(400, 'Belohnung fehlt');
+  const entry = { id: crypto.randomUUID(), level, text, claimedAt: null };
+  db.rewards.push(entry);
+  return entry;
+})));
+
+app.patch('/api/rewards/:id', route(async (req) => mutate((db) => {
+  const reward = db.rewards.find((r) => r.id === req.params.id);
+  if (!reward) throw new HttpError(404, 'Belohnung nicht gefunden');
+  reward.claimedAt = req.body.claimed ? new Date().toISOString() : null;
+  return reward;
 })));
 
 app.delete('/api/:collection/:id', route(async (req) => mutate((db) => {
