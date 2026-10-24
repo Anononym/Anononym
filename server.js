@@ -10,16 +10,28 @@ const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(__dirname, 'data
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 const PASSWORD = process.env.APP_PASSWORD || '';
 
-const MEDIA_TYPES = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-  'video/mp4': 'mp4',
-  'video/webm': 'webm',
-};
-const COLLECTIONS = ['sessions', 'income', 'trainings'];
+const COLLECTIONS = ['sessions', 'income', 'trainings', 'sleep'];
 
-const DEFAULT_GOALS = { weekHours: 40, monthIncome: 5000, weekTrainings: 3 };
+// Hours for work and sleep, euros for income, counts for training.
+const DEFAULT_GOALS = {
+  workDay: 8,
+  workWeek: 40,
+  workMonth: 160,
+  incomeMonth: 5000,
+  trainWeek: 3,
+  trainMonth: 12,
+  sleepNight: 9.5,
+};
+
+// Goals from the first version (weekHours, monthIncome, weekTrainings) map onto the new keys.
+function migrateGoals(old = {}) {
+  const goals = { ...DEFAULT_GOALS };
+  if (old.weekHours) Object.assign(goals, { workDay: old.weekHours / 5, workWeek: old.weekHours, workMonth: Math.round(old.weekHours * 4.33) });
+  if (old.monthIncome) goals.incomeMonth = old.monthIncome;
+  if (old.weekTrainings) Object.assign(goals, { trainWeek: old.weekTrainings, trainMonth: Math.round(old.weekTrainings * 4.33) });
+  for (const key of Object.keys(DEFAULT_GOALS)) if (old[key] !== undefined) goals[key] = old[key];
+  return goals;
+}
 
 const emptyDb = () => ({
   name: process.env.HERO_NAME || 'Player',
@@ -28,15 +40,16 @@ const emptyDb = () => ({
   sessions: [],
   income: [],
   trainings: [],
-  media: null,
+  sleep: [],
 });
 
 // ---------- Storage: one JSON file, writes serialized to avoid lost updates ----------
 
 async function loadDb() {
   try {
-    const db = { ...emptyDb(), ...JSON.parse(await fs.readFile(DB_FILE, 'utf8')) };
-    db.goals = { ...DEFAULT_GOALS, ...db.goals };
+    const { media, ...stored } = JSON.parse(await fs.readFile(DB_FILE, 'utf8'));
+    const db = { ...emptyDb(), ...stored };
+    db.goals = migrateGoals(stored.goals);
     return db;
   } catch (err) {
     if (err.code === 'ENOENT') return emptyDb();
@@ -88,7 +101,7 @@ function sameSecret(a, b) {
   return crypto.timingSafeEqual(ha, hb);
 }
 
-// Basic auth for everything (page, API, media) once APP_PASSWORD is set.
+// Basic auth for everything (page and API) once APP_PASSWORD is set.
 app.use((req, res, next) => {
   if (!PASSWORD) return next();
   const [scheme, encoded] = (req.headers.authorization || '').split(' ');
@@ -171,6 +184,19 @@ app.post('/api/trainings', route(async (req) => mutate((db) => {
   return entry;
 })));
 
+// One entry per night, keyed by the day you woke up. Logging the same day again replaces it.
+app.post('/api/sleep', route(async (req) => mutate((db) => {
+  const minutes = Math.round(Number(req.body.minutes));
+  if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 24 * 60) throw new HttpError(400, 'Schlaf muss zwischen 0 und 24 Stunden liegen');
+  const date = parseDate(req.body.date, 'date');
+  const day = String(req.body.day ?? '').slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new HttpError(400, 'Ungültiger Tag');
+  db.sleep = db.sleep.filter((e) => e.day !== day);
+  const entry = { id: crypto.randomUUID(), day, date, minutes };
+  db.sleep.push(entry);
+  return entry;
+})));
+
 app.delete('/api/:collection/:id', route(async (req) => mutate((db) => {
   const { collection, id } = req.params;
   if (!COLLECTIONS.includes(collection)) throw new HttpError(404, 'Unbekannt');
@@ -179,31 +205,6 @@ app.delete('/api/:collection/:id', route(async (req) => mutate((db) => {
   if (db[collection].length === before) throw new HttpError(404, 'Eintrag nicht gefunden');
   return { ok: true };
 })));
-
-// Photo or video of you. Body is the raw file, Content-Type tells us what it is.
-app.post(
-  '/api/media',
-  express.raw({ type: Object.keys(MEDIA_TYPES), limit: '80mb' }),
-  route(async (req) => {
-    const ext = MEDIA_TYPES[req.headers['content-type']];
-    if (!ext || !Buffer.isBuffer(req.body) || req.body.length === 0) {
-      throw new HttpError(400, 'Nur JPG, PNG, WEBP, MP4 oder WEBM');
-    }
-    const file = `hero-${Date.now()}.${ext}`;
-    await fs.writeFile(path.join(DATA_DIR, file), req.body);
-    return mutate(async (db) => {
-      if (db.media?.file) await fs.rm(path.join(DATA_DIR, db.media.file), { force: true });
-      db.media = { file, kind: ext === 'mp4' || ext === 'webm' ? 'video' : 'image' };
-      return db.media;
-    });
-  }),
-);
-
-app.get('/media/:file', async (req, res, next) => {
-  const db = await loadDb().catch(next);
-  if (!db?.media || db.media.file !== req.params.file) return res.sendStatus(404);
-  res.sendFile(path.join(DATA_DIR, db.media.file), { maxAge: '365d', immutable: true });
-});
 
 app.use((err, req, res, _next) => {
   const status = err.status || err.statusCode || 500;
